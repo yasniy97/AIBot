@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Project Management Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px 20px;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .prompt-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .prompt-btn, .action-btn {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .prompt-btn {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 2px solid transparent;
+        }
+
+        .prompt-btn:hover {
+            background: #bbdefb;
+            transform: translateY(-2px);
+        }
+
+        .action-btn {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            margin-bottom: 10px;
+        }
+
+        .action-btn:hover {
+            background: #e1bee7;
+            transform: translateY(-2px);
+        }
+
+        .chat-area {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .user-message {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .bot-message {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .message-role {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .custom-input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .custom-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .file-upload-area {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .file-input {
+            margin: 10px 0;
+        }
+
+        .uploaded-files {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: #e8f5e8;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .status-error {
+            background: #ffebee;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+
+        .status-success {
+            background: #e8f5e8;
+            color: #388e3c;
+            border: 1px solid #c8e6c9;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkbox-container {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Project Management Assistant</h1>
+            <p>Your intelligent project management companion</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>📋 Pre-built Prompts</h3>
+                <div class="prompt-buttons">
+                    <button class="prompt-btn" onclick="sendPrompt('Create a Project Charter')">
+                        📊 Create Project Charter
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Create a Project Status Report')">
+                        📈 Create Status Report
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Create a Project Management Plan')">
+                        📋 Create Management Plan
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Create a Risk Register')">
+                        ⚠️ Create Risk Register
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Analyze uploaded document for project insights')">
+                        🔍 Analyze Documents
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Extract key project information from document')">
+                        📤 Extract Key Info
+                    </button>
+                    <button class="prompt-btn" onclick="sendPrompt('Create action items based on document content')">
+                        ✅ Create Action Items
+                    </button>
+                </div>
+
+                <h3>🛠️ Actions</h3>
+                <button class="action-btn" onclick="clearChat()">
+                    🗑️ Clear Chat
+                </button>
+                <button class="action-btn" onclick="toggleDocuments()">
+                    📁 Toggle Documents View
+                </button>
+            </div>
+
+            <div class="chat-area">
+                <div id="statusMessage" class="status-message status-info">
+                    ℹ️ Note: This is a demo version. For AI functionality, you'll need to integrate with an AI service.
+                </div>
+
+                <div class="file-upload-area">
+                    <h4>📎 Upload Documents</h4>
+                    <input type="file" id="fileInput" class="file-input" multiple 
+                           accept=".txt,.pdf,.docx,.xlsx,.csv" onchange="handleFileUpload()">
+                    <p><small>Supported: .txt, .pdf, .docx, .xlsx, .csv</small></p>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="includeDocsCheckbox" checked>
+                        <label for="includeDocsCheckbox">Include uploaded documents in messages</label>
+                    </div>
+                </div>
+
+                <div id="uploadedFiles" class="uploaded-files" style="display: none;"></div>
+
+                <div id="chatMessages" class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-role">🤖 AI Assistant:</div>
+                        <div>Welcome! I'm your AI Project Management Assistant. Choose a pre-built prompt or type your own message to get started.</div>
+                    </div>
+                </div>
+
+                <div class="custom-input-area">
+                    <input type="text" id="customInput" class="custom-input" 
+                           placeholder="Type your message here..." 
+                           onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendCustomMessage()">
+                        📤 Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let messages = [];
+        let uploadedDocuments = {};
+
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+            
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            
+            if (files.length === 0) return;
+
+            for (let file of files) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    uploadedDocuments[file.name] = {
+                        content: content,
+                        size: file.size,
+                        type: file.type
+                    };
+                    
+                    updateUploadedFilesList();
+                    showStatus(`✅ Successfully uploaded: ${file.name}`, 'success');
+                };
+                
+                reader.onerror = function() {
+                    showStatus(`❌ Error reading file: ${file.name}`, 'error');
+                };
+                
+                // Read as text for most files
+                reader.readAsText(file);
+            }
+        }
+
+        function updateUploadedFilesList() {
+            const container = document.getElementById('uploadedFiles');
+            const fileNames = Object.keys(uploadedDocuments);
+            
+            if (fileNames.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            container.innerHTML = '<h4>📁 Uploaded Documents:</h4>' +
+                fileNames.map(name => {
+                    const doc = uploadedDocuments[name];
+                    return `<div class="file-item">
+                        📄 ${name} (${Math.round(doc.size / 1024)}KB)
+                        <button onclick="removeDocument('${name}')" style="float: right; background: none; border: none; cursor: pointer;">❌</button>
+                    </div>`;
+                }).join('');
+        }
+
+        function removeDocument(fileName) {
+            delete uploadedDocuments[fileName];
+            updateUploadedFilesList();
+            showStatus(`🗑️ Removed: ${fileName}`, 'info');
+        }
+
+        function addMessage(role, content) {
+            messages.push({ role, content });
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'bot-message'}`;
+            
+            const roleSpan = document.createElement('div');
+            roleSpan.className = 'message-role';
+            roleSpan.textContent = role === 'user' ? '👤 You:' : '🤖 AI Assistant:';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(roleSpan);
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendPrompt(prompt) {
+            const includeDocuments = document.getElementById('includeDocsCheckbox').checked;
+            processMessage(prompt, includeDocuments);
+        }
+
+        function sendCustomMessage() {
+            const input = document.getElementById('customInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const includeDocuments = document.getElementById('includeDocsCheckbox').checked;
+            input.value = '';
+            
+            processMessage(message, includeDocuments);
+        }
+
+        function processMessage(message, includeDocuments) {
+            // Add user message
+            let displayMessage = message;
+            if (includeDocuments && Object.keys(uploadedDocuments).length > 0) {
+                displayMessage += ` (with ${Object.keys(uploadedDocuments).length} document(s))`;
+            }
+            addMessage('user', displayMessage);
+            
+            // Simulate AI response (in real implementation, this would call your AI service)
+            setTimeout(() => {
+                let response = generateMockResponse(message, includeDocuments);
+                addMessage('bot', response);
+            }, 1000);
+        }
+
+        function generateMockResponse(message, includeDocuments) {
+            // Mock responses for demo purposes
+            const responses = {
+                'Create a Project Charter': 'Here\'s a sample Project Charter structure:\n\n1. Project Title & Description\n2. Project Objectives\n3. Scope & Deliverables\n4. Timeline & Milestones\n5. Budget & Resources\n6. Stakeholders\n7. Success Criteria\n\nWould you like me to elaborate on any section?',
+                'Create a Project Status Report': 'Project Status Report Template:\n\n📊 Overall Status: [Green/Yellow/Red]\n📅 Reporting Period: [Date Range]\n🎯 Key Accomplishments\n⚠️ Issues & Risks\n📋 Upcoming Milestones\n💰 Budget Status\n\nShall I customize this for your specific project?',
+                'Create a Project Management Plan': 'Project Management Plan Components:\n\n1. Executive Summary\n2. Project Organization\n3. Work Breakdown Structure\n4. Schedule Management\n5. Cost Management\n6. Quality Management\n7. Risk Management\n8. Communication Plan\n\nWhich component would you like to focus on first?',
+                'Create a Risk Register': 'Risk Register Template:\n\n🆔 Risk ID | 📝 Description | 📊 Probability | 💥 Impact | 🎯 Risk Score | 🛡️ Mitigation Strategy | 👤 Owner\n\nCommon project risks to consider:\n• Scope creep\n• Resource availability\n• Technology challenges\n• Stakeholder alignment\n\nWhat specific risks are you concerned about?'
+            };
+            
+            if (responses[message]) {
+                let response = responses[message];
+                if (includeDocuments && Object.keys(uploadedDocuments).length > 0) {
+                    response += '\n\n📎 I\'ve also considered the content from your uploaded documents in this response.';
+                }
+                return response;
+            }
+            
+            // Default response
+            let response = `I understand you're asking about: "${message}"\n\nAs an AI Project Management Assistant, I can help you with:\n• Creating project documents\n• Analyzing project data\n• Providing PM best practices\n• Risk assessment\n• Status reporting\n\nHow would you like me to assist you further?`;
+            
+            if (includeDocuments && Object.keys(uploadedDocuments).length > 0) {
+                response += `\n\n📁 I see you have ${Object.keys(uploadedDocuments).length} uploaded document(s). I can analyze these for project insights if needed.`;
+            }
+            
+            return response;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendCustomMessage();
+            }
+        }
+
+        function clearChat() {
+            messages = [];
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message bot-message">
+                    <div class="message-role">🤖 AI Assistant:</div>
+                    <div>Chat cleared! How can I help you with your project management needs?</div>
+                </div>
+            `;
+            showStatus('💬 Chat history cleared', 'info');
+        }
+
+        function toggleDocuments() {
+            const container = document.getElementById('uploadedFiles');
+            if (Object.keys(uploadedDocuments).length === 0) {
+                showStatus('📁 No documents uploaded yet', 'info');
+                return;
+            }
+            
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('🚀 AI Project Management Assistant loaded successfully!', 'success');
+        });
+    </script>
+</body>
+</html>
